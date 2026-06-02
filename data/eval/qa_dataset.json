@@ -1,0 +1,76 @@
+{
+  "document": "RGPD.pdf",
+  "description": "Dataset d'évaluation pour le Règlement (UE) 2016/679 (RGPD).",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "À partir de quelle date le RGPD est-il applicable ?",
+      "expected_answer": "Le RGPD est applicable à partir du 25 mai 2018.",
+      "relevant_pages": [87],
+      "keywords": ["25 mai 2018", "applicable"]
+    },
+    {
+      "id": "q2",
+      "question": "Quel est le délai pour notifier une violation de données à l'autorité de contrôle ?",
+      "expected_answer": "72 heures au plus tard après en avoir pris connaissance.",
+      "relevant_pages": [51, 52],
+      "keywords": ["72 heures", "notification", "violation"]
+    },
+    {
+      "id": "q3",
+      "question": "Quel est le montant maximal des amendes administratives les plus élevées ?",
+      "expected_answer": "Jusqu'à 20 000 000 EUR ou 4 % du chiffre d'affaires annuel mondial total, le montant le plus élevé étant retenu.",
+      "relevant_pages": [83],
+      "keywords": ["20 000 000", "4 %", "chiffre d'affaires"]
+    },
+    {
+      "id": "q4",
+      "question": "À partir de quel âge un enfant peut-il consentir seul au traitement de ses données pour les services en ligne ?",
+      "expected_answer": "16 ans, mais les États membres peuvent prévoir un âge inférieur qui ne peut être en dessous de 13 ans.",
+      "relevant_pages": [37],
+      "keywords": ["16 ans", "13 ans", "enfant", "consentement"]
+    },
+    {
+      "id": "q5",
+      "question": "Quelle directive le RGPD abroge-t-il ?",
+      "expected_answer": "Le RGPD abroge la directive 95/46/CE avec effet au 25 mai 2018.",
+      "relevant_pages": [86],
+      "keywords": ["95/46/CE", "abrogée", "directive"]
+    },
+    {
+      "id": "q6",
+      "question": "Que signifie la pseudonymisation selon le règlement ?",
+      "expected_answer": "Le traitement de données de telle façon qu'elles ne puissent plus être attribuées à une personne concernée précise sans recourir à des informations supplémentaires, conservées séparément.",
+      "relevant_pages": [33],
+      "keywords": ["pseudonymisation", "informations supplémentaires", "séparément"]
+    },
+    {
+      "id": "q7",
+      "question": "Quels sont les droits de la personne concernée en matière d'effacement ?",
+      "expected_answer": "Le droit à l'effacement, aussi appelé droit à l'oubli, permet d'obtenir l'effacement des données dans les meilleurs délais dans certains cas (données plus nécessaires, retrait du consentement, opposition, traitement illicite, etc.).",
+      "relevant_pages": [43, 44],
+      "keywords": ["effacement", "droit à l'oubli", "consentement"]
+    },
+    {
+      "id": "q8",
+      "question": "Dans quels cas la désignation d'un délégué à la protection des données est-elle obligatoire ?",
+      "expected_answer": "Lorsque le traitement est effectué par une autorité publique, lorsque les activités de base exigent un suivi régulier et systématique à grande échelle, ou lorsqu'elles consistent en un traitement à grande échelle de catégories particulières de données.",
+      "relevant_pages": [55],
+      "keywords": ["délégué", "autorité publique", "grande échelle"]
+    },
+    {
+      "id": "q9",
+      "question": "Quels sont les principes relatifs au traitement des données personnelles ?",
+      "expected_answer": "Licéité loyauté transparence, limitation des finalités, minimisation des données, exactitude, limitation de la conservation, intégrité et confidentialité.",
+      "relevant_pages": [35, 36],
+      "keywords": ["licéité", "minimisation", "finalités", "confidentialité"]
+    },
+    {
+      "id": "q10",
+      "question": "Qu'est-ce qu'une donnée à caractère personnel ?",
+      "expected_answer": "Toute information se rapportant à une personne physique identifiée ou identifiable, directement ou indirectement, par référence à un identifiant tel qu'un nom, un numéro, des données de localisation, etc.",
+      "relevant_pages": [33],
+      "keywords": ["personne physique", "identifiable", "identifiant"]
+    }
+  ]
+}
