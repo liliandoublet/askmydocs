@@ -34,24 +34,20 @@ def ingest(file_path: str | Path, reset: bool = False) -> int:
     return n
 
 
-def ask(question: str) -> RagResponse:
+def ask(question: str, provider: str | None = None, lang: str = "fr") -> RagResponse:
     """Pose une question au pipeline RAG.
 
     Pipeline : search → generate.
 
     Args:
         question: la question de l'utilisateur en langage naturel.
+        lang: langue de la réponse ("fr" ou "en").
 
     Returns:
         Un RagResponse contenant la réponse et les sources utilisées.
     """
-    # 1. Recherche des chunks pertinents
     results = search(question)
-
-    # 2. Génération de la réponse à partir de ces chunks
-    answer = generate_answer(question, results)
-
-    return RagResponse(answer=answer, sources=results)
+    return generate_answer(question, results, provider=provider, lang=lang)
 
 
 if __name__ == "__main__":

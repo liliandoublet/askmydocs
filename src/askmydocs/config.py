@@ -10,12 +10,19 @@ DATA_DIR = PROJECT_ROOT / "data"
 UPLOADS_DIR = DATA_DIR / "uploads"
 CHROMA_DIR = DATA_DIR / "chroma_db"
 
-# --- API ---
+# --- LLM ---
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")
+
+# Ollama (local, RGPD)
+OLLAMA_MODEL = "llama3.2"
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+# Gemini (cloud)
+GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # --- Modèles ---
 EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
-LLM_MODEL = "gemini-2.5-flash"          # Gratuit jusqu'à ~1500 req/jour
 
 # --- Paramètres RAG ---
 CHUNK_SIZE = 800
@@ -29,7 +36,7 @@ COLLECTION_NAME = "askmydocs"
 
 def check_config() -> None:
     """Vérifie que la config est OK au démarrage."""
-    if not GEMINI_API_KEY:
+    if LLM_PROVIDER == "gemini" and not GEMINI_API_KEY:
         raise ValueError(
             "❌ GEMINI_API_KEY manquante. Vérifie ton fichier .env"
         )
@@ -44,4 +51,6 @@ if __name__ == "__main__":
     print(f"📁 Uploads dir  : {UPLOADS_DIR}")
     print(f"📁 ChromaDB dir : {CHROMA_DIR}")
     print(f"🤖 Modèle embed : {EMBEDDING_MODEL}")
-    print(f"🤖 Modèle LLM   : {LLM_MODEL}")
+    print(f"🤖 Modèle LLM   : {LLM_PROVIDER}")
+    model = OLLAMA_MODEL if LLM_PROVIDER == "ollama" else GEMINI_MODEL
+    print(f"🤖 Modèle LLM   : {model}")
