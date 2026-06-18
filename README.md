@@ -9,7 +9,37 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 <!-- Replace with your screenshot: docs/screenshots/app_demo.png -->
-![Application demo](docs/screenshots/app_demo.png)
+<p align="center">
+  <img src="docs/Screen_askmydocs.png" alt="AskMyDocs Interface" width="800">
+</p
+
+## 🎥 Showcase
+
+<p align="center">
+  <img src="docs/gif_1_Streamlit_run.gif" alt="AskMyDocs Interface" width="250">
+  <img src="docs/gif_2_load.gif" alt="AskMyDocs Interface" width="250">
+  <img src="docs/gif_3_result.gif" alt="AskMyDocs Interface" width="250">
+</p
+
+<h2 align="center">Workflow en 3 étapes</h2>
+
+<table align="center">
+  <tr>
+    <td align="center"><b>Étape 1</b></td>
+    <td align="center"><b>Étape 2</b></td>
+    <td align="center"><b>Étape 3</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/gif1.gif" width="250"></td>
+    <td><img src="docs/gif2.gif" width="250"></td>
+    <td><img src="docs/gif3.gif" width="250"></td>
+  </tr>
+  <tr>
+    <td align="center">Collecte des données</td>
+    <td align="center">Traitement</td>
+    <td align="center">Visualisation</td>
+  </tr>
+</table>
 
 ## 🎯 Overview
 
@@ -48,7 +78,7 @@ PDF / DOCX
                               Question ──► Semantic search (top-K)
                                                             │
                                                             ▼
-                                                  Generation (Gemini)
+                                            Generation (Gemini or Ollama)
                                                             │
                                                             ▼
                                               Answer + cited sources
