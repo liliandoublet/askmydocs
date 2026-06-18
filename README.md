@@ -16,30 +16,17 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 ## 🎥 Showcase
 
 <p align="center">
-  <img src="docs/gif_1_Streamlit_run.gif" alt="AskMyDocs Interface" width="250">
-  <img src="docs/gif_2_load.gif" alt="AskMyDocs Interface" width="250">
-  <img src="docs/gif_3_result.gif" alt="AskMyDocs Interface" width="250">
+  <img src="docs/gif_1_Streamlit_run.gif" alt="Hox to run streamlit" width="800">
 </p
 
-<h2 align="center">Workflow en 3 étapes</h2>
+<p align="center">
+  <img src="docs/gif_2_load.gif" alt="Load your document" width="800">
+</p
 
-<table align="center">
-  <tr>
-    <td align="center"><b>Étape 1</b></td>
-    <td align="center"><b>Étape 2</b></td>
-    <td align="center"><b>Étape 3</b></td>
-  </tr>
-  <tr>
-    <td><img src="docs/gif1.gif" width="250"></td>
-    <td><img src="docs/gif2.gif" width="250"></td>
-    <td><img src="docs/gif3.gif" width="250"></td>
-  </tr>
-  <tr>
-    <td align="center">Collecte des données</td>
-    <td align="center">Traitement</td>
-    <td align="center">Visualisation</td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/gif_3_result.gif" alt="How it work" width="800">
+</p
+
 
 ## 🎯 Overview
 
