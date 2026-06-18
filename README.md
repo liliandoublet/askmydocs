@@ -22,7 +22,7 @@ The project implements the full RAG (*Retrieval-Augmented Generation*) chain, fr
 - 📄 Ingestion of **PDF** and **Word** (.docx) documents
 - ✂️ Smart chunking with metadata preservation (source, page)
 - 🔍 Semantic search via multilingual embeddings (optimized for French)
-- 🤖 Answer generation with **Gemini**, strictly grounded in the retrieved context
+- 🤖 Answer generation with **Gemini** or **Ollama** for RGPD compliance, strictly grounded in the retrieved context
 - 📌 **Source citations** (document + page) for every answer
 - 💬 Chat interface with history (Streamlit)
 - 📊 **Evaluation harness**: annotated dataset, retrieval and generation metrics
@@ -68,7 +68,7 @@ The pipeline is exposed through two high-level functions in `rag.py`:
 | Chunking | langchain-text-splitters | Robust recursive splitting |
 | Embeddings | sentence-transformers (`paraphrase-multilingual-MiniLM-L12-v2`) | Local, free, multilingual (French) |
 | Vector store | ChromaDB | Zero-config local persistence |
-| LLM | Google Gemini | Generous free tier for development |
+| LLM | Google Gemini or Ollama | Generous free tier for development or RGPD compliance |
 | UI | Streamlit | Fast Python-native UI |
 | Evaluation | custom annotated dataset + custom metrics | Full control over what's measured |
 | Tests | pytest | Coverage of core logic and edge cases |
@@ -179,11 +179,14 @@ askmydocs/
 │   ├── splitter.py        # Chunking
 │   ├── embedder.py        # Embedding generation
 │   ├── vectorstore.py     # Storage and search (ChromaDB)
-│   ├── llm.py             # Answer generation (Gemini)
 │   ├── rag.py             # Pipeline orchestration
 │   └── eval/              # Evaluation harness
 │       ├── metrics.py
 │       └── runner.py
+│   └── llm/               # Answer generation
+│       ├── gemini.py      # Use Gemini for performance
+│       ├── ollama.py      # Use Ollama for data privacy
+│       └── pompt.py       # Prompt use for the LLM
 ├── notebooks/             # Exploration and visualization
 ├── tests/                 # Unit tests (pytest)
 ├── data/                  # Documents and evaluation dataset
