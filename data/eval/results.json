@@ -1,0 +1,92 @@
+[
+  {
+    "id": "q1",
+    "question": "À partir de quelle date le RGPD est-il applicable ?",
+    "hit_rate": 1.0,
+    "precision": 0.167,
+    "kw_recall": 1.0,
+    "refused": false,
+    "answer": "D'après l'article 96 du RGPD [page 87], les accords internationaux impliquant le transfert de données à caractère personnel vers des pays tiers ou à des organisations internationales qui ont été conclus par les États membres avant le 24 mai 2016 et qui respectent le droit de l'Union tel qu'il est applicable avant cette date, restent en vigueur jusqu'à leur modification, leur remplacement ou leur révocation.\n\nCela signifie que les accords internationaux sont toujours applicables avant la date d'entrée en vigueur du RGPD, qui est le 25 mai 2018 [page non spécifié]."
+  },
+  {
+    "id": "q2",
+    "question": "Quel est le délai pour notifier une violation de données à l'autorité de contrôle ?",
+    "hit_rate": 1.0,
+    "precision": 0.167,
+    "kw_recall": 1.0,
+    "refused": false,
+    "answer": "Selon l'article 35 du règlement, si une telle notification ne peut avoir lieu dans ce délai de 72 heures, la notification n'a pas lieu dans les 72 heures, elle est accompagnée des motifs du retard.\n\nEn d'autres termes, le responsable du traitement ou le sous-traitant doit notifie l'autorité de contrôle dans les meilleurs délais après en avoir pris connaissance de la violation de données à caractère personnel. Cela peut se faire au plus tard 72 heures après la découverte de la violation.\n\nIl est important de noter que ce délai n'est pas stricte, et que l'autorité de contrôle peut exigér du responsable du traitement qu'il procède à cette notification en temps opportun."
+  },
+  {
+    "id": "q3",
+    "question": "Quel est le montant maximal des amendes administratives les plus élevées ?",
+    "hit_rate": 1.0,
+    "precision": 0.333,
+    "kw_recall": 1.0,
+    "refused": false,
+    "answer": "Selon l'article [page 82], il existe plusieurs cas de violation de règlements qui peuvent entraîner des amendes administratives maximales différentes. Cependant, si on considère le montant le plus élevé mentionné dans ces articles, nous pouvons conclure que :\n\n- Le montant maximal d'amendes pour les violations des dispositions suivantes peut s'élever jusqu'à 20 000 000 EUR ou jusqu'à 4 % du chiffre d'affaires annuel mondial total de l'exercice précédent (en cas d'entreprise) [page 83 et page 28].\n- Le montant maximal d'amendes pour les violations des dispositions suivantes peut s'élever jusqu'à 10 000 000 EUR ou jusqu'à 2 % du chiffre d'affaires annuel mondial total de l'exercice précédent (en cas d'entreprise) [page 83 et page 82].\n- Le montant maximal que l'on peut citer pour les violations des dispositions suivantes est de 4 % mais il n'est pas précisé si c'est en fonction du chiffre d'affaires ou non [page 28].\n\nAinsi, le montant le plus élevé mentionné dans ces articles est de 20 000 000 EUR."
+  },
+  {
+    "id": "q4",
+    "question": "À partir de quel âge un enfant peut-il consentir seul au traitement de ses données pour les services en ligne ?",
+    "hit_rate": 0.0,
+    "precision": 0.0,
+    "kw_recall": 0.0,
+    "refused": true,
+    "answer": "Je ne trouve pas cette information dans le document."
+  },
+  {
+    "id": "q5",
+    "question": "Quelle directive le RGPD abroge-t-il ?",
+    "hit_rate": 0.0,
+    "precision": 0.0,
+    "kw_recall": 1.0,
+    "refused": false,
+    "answer": "Selon les informations fournies dans le document [page 83], la directive 95/46/CE est abrogée par la directive révisée sur la protection des données à caractère personnel, connue sous le nom de réglementation générale de protection des données (RGPD)."
+  },
+  {
+    "id": "q6",
+    "question": "Que signifie la pseudonymisation selon le règlement ?",
+    "hit_rate": 0.0,
+    "precision": 0.0,
+    "kw_recall": 0.333,
+    "refused": false,
+    "answer": "Selon l'article [page 29], la pseudonymisation s'entend d'une mesure de pseudonymisation qui permet de traiter les données à caractère personnel de manière anonyme et sécurisée, tout en garantissant que ces données puissent être reliées à une personne concerne lorsqu'il est nécessaire.\n\nEn d'autres termes, la pseudonymisation signifie que les données sont traitées sous un identifiant unique qui ne contient pas d'informations personnelles réelles, mais qui peut être lié à une personne concerne lorsqu'il est nécessaire. Cette mesure permet de protéger les données personnelles tout en garantissant leur utilité pour les finalités prévues.\n\nIl convient de noter que la pseudonymisation ne vise pas à exclure d'autres mesures de protection des données, mais plutôt à encourager cette mesure dans le cadre du traitement des données à caractère personnel."
+  },
+  {
+    "id": "q7",
+    "question": "Quels sont les droits de la personne concernée en matière d'effacement ?",
+    "hit_rate": 0.0,
+    "precision": 0.0,
+    "kw_recall": 0.0,
+    "refused": true,
+    "answer": "Je ne trouve pas cette information dans le document."
+  },
+  {
+    "id": "q8",
+    "question": "Dans quels cas la désignation d'un délégué à la protection des données est-elle obligatoire ?",
+    "hit_rate": 1.0,
+    "precision": 0.333,
+    "kw_recall": 0.333,
+    "refused": false,
+    "answer": "Selon l'article 39, la désignation d'un délégué à la protection des données est obligatoire lorsque les conditions suivantes sont remplies :\n\n* Les opérations de traitement de données à caractère personnel effettuées par le responsable du traitement ou le sous-traitant impliquent un grand nombre de personnes (l'absence de décision d'adéquation) [page 20, 98]\n* Le responsable du traitement ou le sous-traitant publie les coordonnées du délégué à la protection des données [page 55]\n* L'une des catégories de responsables du traitement ou de sous-traitants (par exemple associations représentatives) ne peut pas élaborer un code de conduite pour garantir la protection des données [page 19]\n\nDans ces cas, le responsable du traitement ou le sous-traitant doit désigner un délégué à la protection des données qui peut exercer ses missions indépendamment."
+  },
+  {
+    "id": "q9",
+    "question": "Quels sont les principes relatifs au traitement des données personnelles ?",
+    "hit_rate": 1.0,
+    "precision": 0.167,
+    "kw_recall": 0.5,
+    "refused": false,
+    "answer": "Selon l'article 5 du Règlement Général sur la Protection des Données Affectant la Vie Privée (RGPD) [page 35], les principes relatifs au traitement des données à caractère personnel sont les suivants :\n\n1. Les données à caractère personnel doivent être traitées de manière licite, loyale et transparente au regard de la personne concernée (licéité, loyauté, transparence).\n2. Les données à caractère personnel doivent être collectées pour des finalités déterminées, explicites et légales, et ne pas être traitées ultérieurement d'une manière incompatible avec ces finalités.\n3. Le traitement ultérieur aux données à caractère personnel pour des fins archivistiques dans l'intérêt public, pour des recherches scientifiques ou historiques ou pour des fins statistiques n'est pas considéré comme incompatible avec les finalités initiales [page 35].\n\nCes principes sont également définis par la Commission Européenne dans son rapport aux risques et à la nature des données à caractère personnel à protéger [page 16]."
+  },
+  {
+    "id": "q10",
+    "question": "Qu'est-ce qu'une donnée à caractère personnel ?",
+    "hit_rate": 0.0,
+    "precision": 0.0,
+    "kw_recall": 0.667,
+    "refused": false,
+    "answer": "Selon l'article 4 du règlement général sur la protection des données (RGPD), une donnée à caractère personnel est \"toute informations personnelle relative à une personne physique identifiée ou identifiable\". [page 35]\n\nCela peut inclure des informations telles que :\n\n* Un nom, un prénom ou une adresse\n* Une date de naissance ou un numéro d'identification sociale\n* Des coordonnées téléphoniques ou électroniques\n* Des informations sur l'historique de navigation internet\n* Des données sur les préférences ou les habitudes d'une personne\n\nEn résumé, les données à caractère personnel sont celles qui permettent d'identifier une personne physique, même si cela n'est pas directement possible."
+  }
+]

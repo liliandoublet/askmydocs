@@ -171,10 +171,10 @@ The harness **decouples retrieval from generation**, to precisely diagnose the s
 
 | Metric | Score |
 |---|---|
-| Hit rate | _TBD_ |
-| Precision | _TBD_ |
-| Keyword recall | _TBD_ |
-| Refusal rate | _TBD_ |
+| Hit rate | 50.0% |
+| Precision | 11.7% |
+| Keyword recall | 58.3% |
+| Refusal rate | 2/10 |
 
 > **Reading the numbers:** precision is expected to be low on this corpus. With
 > only 1 to 2 relevant pages out of 88, even perfect retrieval cannot score high.
