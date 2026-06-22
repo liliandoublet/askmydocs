@@ -15,8 +15,8 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 ## 🎥 Showcase
 
 <p align="center">
-  <img src="docs/gif_1_Streamlit_run.gif" alt="How to run Streamlit" width="800">
-</p>
+  <img src="docs/gif_1_Streamlit_run.gif" alt="How to run streamlit" width="800">
+</p
 
 <p align="center">
   <img src="docs/gif_2_load.gif" alt="Load your document" width="800">
@@ -24,7 +24,8 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 
 <p align="center">
   <img src="docs/gif_3_result.gif" alt="How it works" width="800">
-</p>
+</p
+
 
 ## 🎯 Overview
 
@@ -226,6 +227,10 @@ askmydocs/
 │   └── eval/              # Evaluation harness
 │       ├── metrics.py
 │       └── runner.py
+│   └── llm/               # Answer generation
+│       ├── gemini.py      # Use Gemini for performance
+│       ├── ollama.py      # Use Ollama for data privacy
+│       └── prompt.py       # Prompt use for the LLM
 ├── notebooks/             # Exploration and visualization
 ├── tests/                 # Unit tests (pytest)
 ├── data/                  # Documents and evaluation dataset
