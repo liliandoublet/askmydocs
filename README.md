@@ -2,7 +2,7 @@
 
 > Retrieval-Augmented Generation is the backbone of "chat with your documents" systems. This project implements one end to end, **runs fully on-device for privacy**, and **measures whether it actually works**.
 
-A conversational assistant that answers questions about your documents (PDF, Word) through a complete **RAG** pipeline, with source citations and **quantitative evaluation** of answer quality. It runs **100% locally** by default (embeddings, vector search and LLM) — no data ever leaves your machine, a privacy-by-design approach well-suited to GDPR-sensitive documents.
+A conversational assistant that answers questions about your documents (PDF, Word) through a complete **RAG** pipeline, with source citations and **quantitative evaluation** of answer quality. It runs **100% locally** by default (embeddings, vector search and LLM), so no data ever leaves your machine, a privacy-by-design approach well-suited to GDPR-sensitive documents.
 
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B.svg)
@@ -15,8 +15,8 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 ## 🎥 Showcase
 
 <p align="center">
-  <img src="docs/gif_1_Streamlit_run.gif" alt="How to run streamlit" width="800">
-</p
+  <img src="docs/gif_1_Streamlit_run.gif" alt="How to run Streamlit" width="800">
+</p>
 
 <p align="center">
   <img src="docs/gif_2_load.gif" alt="Load your document" width="800">
@@ -24,12 +24,11 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 
 <p align="center">
   <img src="docs/gif_3_result.gif" alt="How it works" width="800">
-</p
-
+</p>
 
 ## 🎯 Overview
 
-AskMyDocs lets you query a document in natural language. You ask a question, it retrieves the relevant passages from the document and generates a sourced answer — without hallucinating, relying solely on the provided content.
+AskMyDocs lets you query a document in natural language. You ask a question, it retrieves the relevant passages from the document and generates a sourced answer, without hallucinating, relying solely on the provided content.
 
 The project implements the full RAG (*Retrieval-Augmented Generation*) chain, from document ingestion to answer generation, **plus** an evaluation harness to objectively measure its performance.
 
@@ -52,7 +51,7 @@ The project implements the full RAG (*Retrieval-Augmented Generation*) chain, fr
 
 **A:** A personal data breach must be notified to the supervisory authority within 72 hours of becoming aware of it [page 52].
 
-> 📄 Sources: RGPD.pdf — p.51, p.52
+> 📄 Sources: RGPD.pdf, p.51, p.52
 
 ## 🏗️ Architecture
 
@@ -67,15 +66,15 @@ PDF / DOCX
                               Question ──► Semantic search (top-K)
                                                             │
                                                             ▼
-                                          Generation (Ollama, local — or Gemini)
+                                          Generation (Ollama, local, or Gemini)
                                                             │
                                                             ▼
                                               Answer + cited sources
 ```
 
 The pipeline is exposed through two high-level functions in `rag.py`:
-- `ingest(file_path)` — loads, chunks and indexes a document
-- `ask(question)` — retrieves the relevant passages and generates the answer
+- `ingest(file_path)`: loads, chunks and indexes a document
+- `ask(question)`: retrieves the relevant passages and generates the answer
 
 The layered design keeps the LLM provider behind a single interface: switching between Ollama and Gemini only touches one module, the rest of the pipeline is untouched.
 
@@ -89,7 +88,7 @@ The layered design keeps the LLM provider behind a single interface: switching b
 | Chunking | langchain-text-splitters | Robust recursive splitting |
 | Embeddings | sentence-transformers (`paraphrase-multilingual-MiniLM-L12-v2`) | Local, free, multilingual (French) |
 | Vector store | ChromaDB | Zero-config local persistence |
-| LLM (default) | Ollama (`llama3.2`), local | 100% on-device — no data leaves the machine (GDPR) |
+| LLM (default) | Ollama (`llama3.2`), local | 100% on-device, no data leaves the machine (GDPR) |
 | LLM (optional) | Google Gemini | Cloud alternative when performance matters more than locality |
 | UI | Streamlit | Fast Python-native UI |
 | Evaluation | custom annotated dataset + custom metrics | Full control over what's measured |
@@ -119,7 +118,7 @@ ollama pull llama3.2
 ollama serve
 ```
 
-No API key is required — everything runs locally.
+No API key is required, everything runs locally.
 
 ### Optional: cloud LLM with Gemini
 
@@ -157,7 +156,7 @@ uv run python -m askmydocs.eval.runner data/uploads/RGPD.pdf
 
 ### Metrics measured
 
-The harness **decouples retrieval from generation**, to precisely diagnose the source of any failure — a low hit rate points to a retrieval problem, while a good hit rate paired with refusals points to a prompt or generation problem.
+The harness **decouples retrieval from generation**, to precisely diagnose the source of any failure: a low hit rate points to a retrieval problem, while a good hit rate paired with refusals points to a prompt or generation problem.
 
 | Metric | What it measures |
 |---|---|
@@ -177,26 +176,26 @@ The harness **decouples retrieval from generation**, to precisely diagnose the s
 | Keyword recall | _TBD_ |
 | Refusal rate | _TBD_ |
 
-> **Reading the numbers:** precision is expected to be low on this corpus — with
-> only 1–2 relevant pages out of 88, even perfect retrieval cannot score high.
+> **Reading the numbers:** precision is expected to be low on this corpus. With
+> only 1 to 2 relevant pages out of 88, even perfect retrieval cannot score high.
 > The meaningful signals here are **hit rate** (is the right page found?) and
 > **keyword recall** (is the answer factually correct?).
 
 ## 🧠 Engineering notes
 
-A few real problems solved while building this — and what they taught me:
+A few real problems solved while building this, and what they taught me:
 
-- **Embedding model / language mismatch** — the initial English-centric model
+- **Embedding model / language mismatch**: the initial English-centric model
   poorly separated French text (a discriminative gap of only ~0.08 between related
   and unrelated sentence pairs). Diagnosing this and switching to a multilingual
   model more than doubled the gap. Lesson: match the embedding model to the
   language of your corpus, and *measure* it rather than assume.
-- **Extraction noise → index pollution** — figure-heavy pages produced 1-character
-  chunks (bare page numbers) that polluted the vector index and surfaced as
-  irrelevant top results. Added a minimum-length filter, covered by a unit test.
-  Lesson: in RAG, ingestion quality matters as much as the model — *garbage in,
-  garbage out*.
-- **External API resilience** — the cloud LLM API intermittently returned 429 (rate
+- **Extraction noise leading to index pollution**: figure-heavy pages produced
+  1-character chunks (bare page numbers) that polluted the vector index and
+  surfaced as irrelevant top results. Added a minimum-length filter, covered by a
+  unit test. Lesson: in RAG, ingestion quality matters as much as the model.
+  *Garbage in, garbage out.*
+- **External API resilience**: the cloud LLM API intermittently returned 429 (rate
   limit) and 503 (overload) responses during batch evaluation. Added
   retry-with-backoff covering both, plus graceful degradation so a single failure
   doesn't discard the whole run. This also motivated the move to a local LLM
@@ -227,10 +226,6 @@ askmydocs/
 │   └── eval/              # Evaluation harness
 │       ├── metrics.py
 │       └── runner.py
-│   └── llm/               # Answer generation
-│       ├── gemini.py      # Use Gemini for performance
-│       ├── ollama.py      # Use Ollama for data privacy
-│       └── prompt.py       # Prompt use for the LLM
 ├── notebooks/             # Exploration and visualization
 ├── tests/                 # Unit tests (pytest)
 ├── data/                  # Documents and evaluation dataset
@@ -253,4 +248,4 @@ uv run pytest -v
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License, see the [LICENSE](LICENSE) file for details.
