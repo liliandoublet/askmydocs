@@ -6,9 +6,12 @@ A conversational assistant that answers questions about your documents (PDF, Wor
 
 Its defining feature is a **dual LLM provider** design: it runs **100% locally** by default (embeddings, vector search *and* generation), so no data ever leaves your machine. This is a privacy-by-design approach well-suited to GDPR-sensitive documents, while a cloud provider (Google Gemini) can be switched on in one click when raw performance matters more than data locality.
 
-![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
-![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-local-000000?style=for-the-badge&logo=ollama&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-vector_store-FF6B6B?style=for-the-badge)
+![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![RGPD](https://img.shields.io/badge/RGPD-compliant-2E7D32?style=for-the-badge&logo=shield&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 <p align="center">
   <img src="docs/Screen_askmydocs.png" alt="AskMyDocs Interface" width="800">
