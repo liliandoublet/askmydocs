@@ -4,7 +4,7 @@
 
 A conversational assistant that answers questions about your documents (PDF, Word) through a complete **RAG** pipeline, with source citations and **quantitative evaluation** of answer quality.
 
-Its defining feature is a **dual LLM provider** design: it runs **100% locally** by default (embeddings, vector search *and* generation), so no data ever leaves your machine — a privacy-by-design approach well-suited to GDPR-sensitive documents — while a cloud provider (Google Gemini) can be switched on in one click when raw performance matters more than data locality.
+Its defining feature is a **dual LLM provider** design: it runs **100% locally** by default (embeddings, vector search *and* generation), so no data ever leaves your machine. This is a privacy-by-design approach well-suited to GDPR-sensitive documents — while a cloud provider (Google Gemini) can be switched on in one click when raw performance matters more than data locality.
 
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B.svg)
