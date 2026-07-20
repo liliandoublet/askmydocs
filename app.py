@@ -1,8 +1,18 @@
 """Interface Streamlit pour AskMyDocs."""
 import streamlit as st
 
-from askmydocs.config import UPLOADS_DIR, GEMINI_API_KEY
+from askmydocs.config import UPLOADS_DIR
+from askmydocs.llm.factory import PROVIDER_REGISTRY
 from askmydocs.rag import ingest, ask
+
+# Nom affiche pour chaque provider (les noms de produit ne se traduisent pas)
+PROVIDER_DISPLAY_NAMES = {
+    "ollama": "Ollama",
+    "gemini": "Gemini",
+    "claude": "Claude",
+    "openai": "OpenAI",
+    "deepseek": "DeepSeek",
+}
 
 
 # --- Translations ---
@@ -17,12 +27,14 @@ TRANSLATIONS = {
         "index_success": "✅ {name} indexé ({n} chunks)",
         "active_doc": "📄 Document actif : **{name}**",
         "no_doc": "Aucun document indexé pour l'instant.",
-        "llm_label": " Modèle LLM",
-        "ollama_label": "🔒 Ollama (local, RGPD)",
-        "gemini_label": "☁️ Gemini (cloud)",
-        "gemini_missing_key": "⚠️ GEMINI_API_KEY manquante — Gemini indisponible.",
-        "gemini_warning": "⚠️ Les données sont envoyées à Google. Non conforme RGPD pour des documents sensibles.",
-        "ollama_ok": "✅ 100% local — aucune donnée ne quitte la machine.",
+        "provider_label": "Provider LLM",
+        "model_label": "Modèle",
+        "local_ok": "✅ 100% local : aucune donnée ne quitte la machine.",
+        "cloud_warning": "⚠️ Les données sont envoyées à un service cloud. Non conforme RGPD pour des documents sensibles.",
+        "unavailable_caption": "Providers indisponibles : {details}",
+        "missing_env_var": "{name} (variable {env_var} manquante)",
+        "service_unreachable": "{name} (service injoignable)",
+        "no_provider_available": "⚠️ Aucun provider LLM disponible. Configure au moins une clé API dans ton fichier .env, ou démarre le service Ollama.",
         "chat_header": "💬 Conversation",
         "no_doc_info": "👈 Commence par charger et indexer un document dans la barre latérale.",
         "sources_label": "📚 Sources",
@@ -41,12 +53,14 @@ TRANSLATIONS = {
         "index_success": "✅ {name} indexed ({n} chunks)",
         "active_doc": "📄 Active document: **{name}**",
         "no_doc": "No document indexed yet.",
-        "llm_label": " LLM Model",
-        "ollama_label": "🔒 Ollama (local, GDPR)",
-        "gemini_label": "☁️ Gemini (cloud)",
-        "gemini_missing_key": "⚠️ GEMINI_API_KEY missing — Gemini unavailable.",
-        "gemini_warning": "⚠️ Data is sent to Google. Not GDPR-compliant for sensitive documents.",
-        "ollama_ok": "✅ 100% local — no data leaves your machine.",
+        "provider_label": "LLM provider",
+        "model_label": "Model",
+        "local_ok": "✅ 100% local: no data leaves your machine.",
+        "cloud_warning": "⚠️ Data is sent to a cloud service. Not GDPR-compliant for sensitive documents.",
+        "unavailable_caption": "Unavailable providers: {details}",
+        "missing_env_var": "{name} ({env_var} missing)",
+        "service_unreachable": "{name} (service unreachable)",
+        "no_provider_available": "⚠️ No LLM provider available. Set at least one API key in your .env file, or start the Ollama service.",
         "chat_header": "💬 Conversation",
         "no_doc_info": "👈 Start by uploading and indexing a document in the sidebar.",
         "sources_label": "📚 Sources",
@@ -69,6 +83,8 @@ def init_state() -> None:
         st.session_state.indexed_file = None
     if "provider" not in st.session_state:
         st.session_state.provider = "ollama"
+    if "model" not in st.session_state:
+        st.session_state.model = PROVIDER_REGISTRY["ollama"].DEFAULT_MODEL
     if "lang" not in st.session_state:
         st.session_state.lang = "fr"
 
@@ -120,23 +136,61 @@ with st.sidebar:
         st.warning(t["no_doc"])
 
     st.divider()
-    provider = st.radio(
-        t["llm_label"],
-        options=["ollama", "gemini"],
-        format_func=lambda x: {
-            "ollama": t["ollama_label"],
-            "gemini": t["gemini_label"],
-        }[x],
-        index=0,
-    )
-    st.session_state.provider = provider
 
-    if provider == "gemini":
-        if not GEMINI_API_KEY:
-            st.error(t["gemini_missing_key"])
-        st.caption(t["gemini_warning"])
+    # Un provider est disponible si sa clé API est présente (cloud) ou si le
+    # service est joignable (Ollama, local). Les providers indisponibles sont
+    # masqués du sélecteur, avec le détail de ce qui manque juste en dessous.
+    available_providers = []
+    unavailable_providers = []
+    for name, provider_cls in PROVIDER_REGISTRY.items():
+        if provider_cls().is_available():
+            available_providers.append(name)
+        else:
+            unavailable_providers.append(name)
+
+    if not available_providers:
+        st.error(t["no_provider_available"])
     else:
-        st.caption(t["ollama_ok"])
+        if st.session_state.provider not in available_providers:
+            st.session_state.provider = available_providers[0]
+            st.session_state.model = PROVIDER_REGISTRY[st.session_state.provider].DEFAULT_MODEL
+
+        provider = st.radio(
+            t["provider_label"],
+            options=available_providers,
+            format_func=lambda x: PROVIDER_DISPLAY_NAMES[x],
+            index=available_providers.index(st.session_state.provider),
+        )
+        if provider != st.session_state.provider:
+            st.session_state.provider = provider
+            st.session_state.model = PROVIDER_REGISTRY[provider].DEFAULT_MODEL
+
+        supported_models = PROVIDER_REGISTRY[provider].SUPPORTED_MODELS
+        model = st.selectbox(
+            t["model_label"],
+            options=supported_models,
+            index=supported_models.index(st.session_state.model)
+            if st.session_state.model in supported_models
+            else 0,
+        )
+        st.session_state.model = model
+
+        if PROVIDER_REGISTRY[provider].IS_LOCAL:
+            st.caption(t["local_ok"])
+        else:
+            st.caption(t["cloud_warning"])
+
+    if unavailable_providers:
+        def _reason(name: str) -> str:
+            env_var = getattr(PROVIDER_REGISTRY[name], "ENV_VAR", None)
+            if env_var:
+                return t["missing_env_var"].format(
+                    name=PROVIDER_DISPLAY_NAMES[name], env_var=env_var
+                )
+            return t["service_unreachable"].format(name=PROVIDER_DISPLAY_NAMES[name])
+
+        details = ", ".join(_reason(name) for name in unavailable_providers)
+        st.caption(t["unavailable_caption"].format(details=details))
 
 
 # --- Main chat area ---
@@ -162,7 +216,12 @@ else:
 
         with st.chat_message("assistant"):
             with st.spinner(t["thinking_spinner"]):
-                response = ask(question, provider=st.session_state.provider, lang=st.session_state.lang)
+                response = ask(
+                    question,
+                    provider=st.session_state.provider,
+                    model=st.session_state.model,
+                    lang=st.session_state.lang,
+                )
             st.markdown(response["answer"])
 
             if response["sources"]:

@@ -47,6 +47,7 @@ The standout feature is that you **choose where inference happens**, directly fr
 This isn't a hidden config flag: the trade-off between **confidentiality** and **performance** is surfaced to the user as an explicit, conscious choice — *privacy by design* in practice.
 
 Architecturally, both providers sit behind a **single interface**. Swapping between them touches **one module only** (`src/askmydocs/llm/`); the rest of the pipeline is completely unaware of which backend answered. This loose coupling is the design decision I'm most proud of in this project.
+**Privacy first:** by default the whole pipeline runs locally via [Ollama](https://ollama.com), so documents, questions and answers never leave your machine. Four cloud providers (Google Gemini, Anthropic Claude, OpenAI, DeepSeek) are also available when raw performance matters more than data locality.
 
 ## ✨ Features
 
@@ -55,6 +56,8 @@ Architecturally, both providers sit behind a **single interface**. Swapping betw
 - 🔍 Semantic search via multilingual embeddings (optimized for French)
 - 🔀 **Dual LLM provider** with one-click switching: Ollama (local, GDPR) or Gemini (cloud, performance)
 - 🔒 **100% local generation** by default — no data leaves the machine
+- 🔒 **100% local generation** with Ollama (privacy / GDPR), or optional cloud generation with Gemini, Claude, OpenAI or DeepSeek
+- 🔌 **Pluggable LLM providers**: a common interface (`LLMProvider`) and a single factory (`get_provider`) used by both the UI and the evaluation harness
 - 🤖 Answers strictly grounded in the retrieved context (no hallucination)
 - 📌 **Source citations** (document + page) for every answer
 - 💬 Chat interface with history (Streamlit)
@@ -88,13 +91,17 @@ PDF / DOCX
                                        └──────────┬──────────┘
                                                   ▼
                                       Answer + cited sources
+                                    Generation (Ollama, Gemini, Claude, OpenAI or DeepSeek)
+                                                            │
+                                                            ▼
+                                              Answer + cited sources
 ```
 
 The pipeline is exposed through two high-level functions in `rag.py`:
 - `ingest(file_path)`: loads, chunks and indexes a document
 - `ask(question, provider=...)`: retrieves the relevant passages and generates the answer with the chosen provider
 
-The layered design keeps the LLM provider behind a single interface: switching between Ollama and Gemini only touches one module, the rest of the pipeline is untouched.
+Every LLM provider implements the same abstract interface (`LLMProvider`, in `llm/base.py`): `generate()`, `model_name` and `is_available()`. A single factory (`get_provider(name, model)`) instantiates the right one, and both the Streamlit UI and the evaluation harness go through it, so adding a provider never requires touching the UI or the pipeline logic.
 
 ## 🛠️ Tech Stack
 
@@ -106,8 +113,8 @@ The layered design keeps the LLM provider behind a single interface: switching b
 | Chunking | langchain-text-splitters | Robust recursive splitting |
 | Embeddings | sentence-transformers (`paraphrase-multilingual-MiniLM-L12-v2`) | Local, free, multilingual (French) |
 | Vector store | ChromaDB | Zero-config local persistence |
-| LLM (default) | Ollama (`llama3.2`), local | 100% on-device, no data leaves the machine (GDPR) |
-| LLM (optional) | Google Gemini | Cloud alternative when performance matters more than locality |
+| LLM (default) | Ollama, local | 100% on-device, no data leaves the machine (GDPR) |
+| LLM (optional) | Gemini, Claude, OpenAI, DeepSeek | Cloud alternatives when performance matters more than locality |
 | UI | Streamlit | Fast Python-native UI |
 | Evaluation | custom annotated dataset + custom metrics | Full control over what's measured |
 | Tests | pytest | Coverage of core logic and edge cases |
@@ -119,6 +126,20 @@ The layered design keeps the LLM provider behind a single interface: switching b
 - **Python 3.11+** and [uv](https://docs.astral.sh/uv/)
 - **~6 GB of RAM** to run a local 7B model (e.g. `mistral`) comfortably alongside the embedding model. Lighter models such as `llama3.2` (3B) work on less. On WSL, allocate memory explicitly in `.wslconfig` to avoid out-of-memory kills.
 - *(Optional)* a Google AI Studio API key, only if you want to use the Gemini provider.
+
+## 🤖 Supported LLM providers
+
+| Provider | Type | Models | Environment variable |
+|---|---|---|---|
+| Ollama | Local | `llama3.2`, `mistral`, `mistral-nemo` | `OLLAMA_HOST` (optional, defaults to `http://localhost:11434`) |
+| Google Gemini | Cloud | `gemini-2.5-flash`, `gemini-2.5-pro` | `GEMINI_API_KEY` |
+| Anthropic Claude | Cloud | `claude-opus-4-8`, `claude-sonnet-5`, `claude-haiku-4-5` | `ANTHROPIC_API_KEY` |
+| OpenAI | Cloud | `gpt-4o-mini`, `gpt-4o`, `gpt-4.1` | `OPENAI_API_KEY` |
+| DeepSeek | Cloud | `deepseek-chat`, `deepseek-reasoner` | `DEEPSEEK_API_KEY` |
+
+A provider with a missing API key degrades gracefully: `is_available()` returns `False`, it is simply hidden from the UI (with a caption explaining which environment variable is missing), and the app never crashes at startup.
+
+> **Transparency note:** Claude, OpenAI and DeepSeek are fully implemented and covered by unit tests that mock every network call, but they have not been exercised against the real APIs (no API credits available at the time of writing). Ollama and Gemini are the two providers validated end to end. If you have credits for the others, feedback on real-world behavior is welcome.
 
 ## 🚀 Installation
 
@@ -146,14 +167,14 @@ ollama serve
 
 No API key is required, everything runs locally.
 
-### Optional: cloud LLM with Gemini
+### Optional: cloud LLMs (Gemini, Claude, OpenAI, DeepSeek)
 
 ```bash
 cp .env.example .env
-# Edit .env and add your Google AI Studio key
+# Edit .env and add the API key(s) for the provider(s) you want to use
 ```
 
-Get a free API key from [Google AI Studio](https://aistudio.google.com/apikey).
+Get an API key from [Google AI Studio](https://aistudio.google.com/apikey) (Gemini), the [Anthropic Console](https://console.anthropic.com/) (Claude), the [OpenAI Platform](https://platform.openai.com/api-keys) (OpenAI), or the [DeepSeek Platform](https://platform.deepseek.com/api_keys) (DeepSeek). You only need to set the keys for the providers you intend to use.
 
 ## 💻 Usage
 
@@ -177,8 +198,10 @@ uv run python -m askmydocs.rag data/uploads/my_document.pdf "My question?"
 The project includes an evaluation harness that measures the pipeline's performance on a dataset of annotated questions (with reference pages and expected keywords).
 
 ```bash
-uv run python -m askmydocs.eval.runner data/uploads/RGPD.pdf
+uv run python -m askmydocs.eval.runner data/uploads/RGPD.pdf --provider claude --model claude-sonnet-5
 ```
+
+`--provider` and `--model` are optional; without them, the harness falls back to `LLM_PROVIDER` from `.env` and that provider's default model.
 
 ### Metrics measured
 
@@ -260,11 +283,16 @@ askmydocs/
 │   ├── embedder.py        # Embedding generation
 │   ├── vectorstore.py     # Storage and search (ChromaDB)
 │   ├── rag.py             # Pipeline orchestration
-│   ├── llm/               # Answer generation (provider interface)
-│   │   ├── __init__.py    # Provider selector (routes to ollama / gemini)
-│   │   ├── ollama.py      # Local LLM (default, privacy / GDPR)
-│   │   ├── gemini.py      # Cloud LLM (optional, performance)
-│   │   └── prompt.py      # Shared system prompt used by both providers
+│   ├── llm/               # Answer generation
+│   │   ├── base.py              # LLMProvider ABC + shared exceptions
+│   │   ├── factory.py           # get_provider(name, model) entry point
+│   │   ├── ollama.py            # Local LLM (default, privacy)
+│   │   ├── gemini.py            # Cloud LLM (Google)
+│   │   ├── claude.py            # Cloud LLM (Anthropic)
+│   │   ├── openai_compatible.py # Shared base for OpenAI-compatible APIs
+│   │   ├── openai.py            # Cloud LLM (OpenAI)
+│   │   ├── deepseek.py          # Cloud LLM (DeepSeek, OpenAI-compatible)
+│   │   └── prompt.py            # Shared prompt used for generation
 │   └── eval/              # Evaluation harness
 │       ├── metrics.py
 │       └── runner.py
@@ -279,6 +307,8 @@ askmydocs/
 ```bash
 uv run pytest -v
 ```
+
+All LLM provider tests (`tests/test_llm_*.py`) mock every SDK call with `unittest.mock`, so the full suite runs with no network access and no API key configured.
 
 ## 🔭 Possible improvements
 

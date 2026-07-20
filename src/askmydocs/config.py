@@ -11,15 +11,13 @@ UPLOADS_DIR = DATA_DIR / "uploads"
 CHROMA_DIR = DATA_DIR / "chroma_db"
 
 # --- LLM ---
+# Le provider par défaut et son modèle par défaut sont définis par les classes
+# provider elles-mêmes (voir askmydocs.llm) ; chaque provider lit sa propre
+# clé API depuis l'environnement.
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")
 
 # Ollama (local, RGPD)
-OLLAMA_MODEL = "llama3.2"
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-
-# Gemini (cloud)
-GEMINI_MODEL = "gemini-2.5-flash"
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # --- Modèles ---
 EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
@@ -36,9 +34,12 @@ COLLECTION_NAME = "askmydocs"
 
 def check_config() -> None:
     """Vérifie que la config est OK au démarrage."""
-    if LLM_PROVIDER == "gemini" and not GEMINI_API_KEY:
+    from askmydocs.llm.factory import get_provider
+
+    provider = get_provider(LLM_PROVIDER)
+    if not provider.is_available():
         raise ValueError(
-            "❌ GEMINI_API_KEY manquante. Vérifie ton fichier .env"
+            f"❌ Provider '{LLM_PROVIDER}' indisponible. Vérifie ton fichier .env"
         )
     UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
     CHROMA_DIR.mkdir(parents=True, exist_ok=True)
@@ -46,11 +47,12 @@ def check_config() -> None:
 
 
 if __name__ == "__main__":
+    from askmydocs.llm.factory import get_provider
+
     check_config()
     print(f"📁 Project root : {PROJECT_ROOT}")
     print(f"📁 Uploads dir  : {UPLOADS_DIR}")
     print(f"📁 ChromaDB dir : {CHROMA_DIR}")
     print(f"🤖 Modèle embed : {EMBEDDING_MODEL}")
-    print(f"🤖 Modèle LLM   : {LLM_PROVIDER}")
-    model = OLLAMA_MODEL if LLM_PROVIDER == "ollama" else GEMINI_MODEL
-    print(f"🤖 Modèle LLM   : {model}")
+    print(f"🤖 Provider LLM : {LLM_PROVIDER}")
+    print(f"🤖 Modèle LLM   : {get_provider(LLM_PROVIDER).model_name}")

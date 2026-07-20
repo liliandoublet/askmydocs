@@ -19,7 +19,12 @@ def load_dataset(path: Path) -> dict:
         return json.load(f)
 
 
-def run_evaluation(dataset_path: Path, document_path: Path) -> list[dict]:
+def run_evaluation(
+    dataset_path: Path,
+    document_path: Path,
+    provider: str | None = None,
+    model: str | None = None,
+) -> list[dict]:
     """Évalue le pipeline RAG sur tout le dataset."""
     dataset = load_dataset(dataset_path)
 
@@ -30,7 +35,7 @@ def run_evaluation(dataset_path: Path, document_path: Path) -> list[dict]:
     rows = []
     for q in dataset["questions"]:
         results = search(q["question"])
-        response = ask(q["question"])
+        response = ask(q["question"], provider=provider, model=model)
 
         row = {
             "id": q["id"],
@@ -72,12 +77,32 @@ def print_summary(rows: list[dict]) -> None:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Évalue le pipeline RAG sur un document.")
+    parser.add_argument(
+        "document",
+        nargs="?",
+        type=Path,
+        default=DATA_DIR / "uploads" / "RGPD.pdf",
+        help="Chemin du document à indexer et évaluer (défaut : data/uploads/RGPD.pdf).",
+    )
+    parser.add_argument(
+        "--provider",
+        default=None,
+        help="Provider LLM à utiliser (ollama, gemini, claude, openai, deepseek). "
+        "Défaut : LLM_PROVIDER défini dans .env.",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Modèle à utiliser pour ce provider. Défaut : modèle par défaut du provider.",
+    )
+    args = parser.parse_args()
 
     dataset_path = DATA_DIR / "eval" / "qa_dataset.json"
-    document_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DATA_DIR / "uploads" / "RGPD.pdf"
 
-    rows = run_evaluation(dataset_path, document_path)
+    rows = run_evaluation(dataset_path, args.document, provider=args.provider, model=args.model)
     print_summary(rows)
 
     out_path = DATA_DIR / "eval" / "results.json"
