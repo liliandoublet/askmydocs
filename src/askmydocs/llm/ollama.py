@@ -1,20 +1,42 @@
+"""Provider Ollama (local, RGPD)."""
 import ollama
 
-from askmydocs.config import OLLAMA_MODEL, OLLAMA_HOST
-from askmydocs.types import SearchResult, RagResponse
-from askmydocs.llm.prompt import get_system_prompt, build_context
-
-_client = ollama.Client(host=OLLAMA_HOST)
+from askmydocs.config import OLLAMA_HOST
+from askmydocs.llm.base import LLMProvider, LLMGenerationError
 
 
-def generate_answer(question: str, results: list[SearchResult], lang: str = "fr") -> RagResponse:
-    context = build_context(results)
-    ctx_label = "Contexte" if lang == "fr" else "Context"
-    response = _client.chat(
-        model=OLLAMA_MODEL,
-        messages=[
-            {"role": "system", "content": get_system_prompt(lang)},
-            {"role": "user", "content": f"{ctx_label} :\n{context}\n\nQuestion : {question}"},
-        ],
-    )
-    return {"answer": response.message.content, "sources": results}
+class OllamaProvider(LLMProvider):
+    """Genere des reponses via un modele Ollama local."""
+
+    DEFAULT_MODEL = "llama3.2"
+    SUPPORTED_MODELS = ["llama3.2", "mistral", "mistral-nemo"]
+    IS_LOCAL = True
+
+    def __init__(self, model: str | None = None, host: str | None = None):
+        self._model = model or self.DEFAULT_MODEL
+        self._client = ollama.Client(host=host or OLLAMA_HOST)
+
+    @property
+    def model_name(self) -> str:
+        return self._model
+
+    def is_available(self) -> bool:
+        try:
+            self._client.list()
+            return True
+        except Exception:
+            return False
+
+    def generate(self, prompt: str, system: str | None = None) -> str:
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        try:
+            response = self._client.chat(model=self._model, messages=messages)
+        except Exception as e:
+            raise LLMGenerationError(
+                f"Erreur lors de l'appel a Ollama (modele {self._model}) : {e}"
+            ) from e
+        return response.message.content

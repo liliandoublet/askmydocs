@@ -34,27 +34,34 @@ def ingest(file_path: str | Path, reset: bool = False) -> int:
     return n
 
 
-def ask(question: str, provider: str | None = None, lang: str = "fr") -> RagResponse:
+def ask(
+    question: str,
+    provider: str | None = None,
+    model: str | None = None,
+    lang: str = "fr",
+) -> RagResponse:
     """Pose une question au pipeline RAG.
 
     Pipeline : search → generate.
 
     Args:
         question: la question de l'utilisateur en langage naturel.
+        provider: nom du provider LLM à utiliser (défaut : LLM_PROVIDER).
+        model: nom du modèle à utiliser pour ce provider (défaut : celui du provider).
         lang: langue de la réponse ("fr" ou "en").
 
     Returns:
         Un RagResponse contenant la réponse et les sources utilisées.
     """
     results = search(question)
-    return generate_answer(question, results, provider=provider, lang=lang)
+    return generate_answer(question, results, provider=provider, model=model, lang=lang)
 
 
 if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 3:
-        print('Usage: uv run python -m src.askmydocs.rag <fichier> "<question>"')
+        print('Usage: uv run python -m askmydocs.rag <fichier> "<question>"')
         sys.exit(1)
 
     file_path = sys.argv[1]

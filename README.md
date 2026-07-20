@@ -46,7 +46,7 @@ The standout feature is that you **choose where inference happens**, directly fr
 
 This isn't a hidden config flag: the trade-off between **confidentiality** and **performance** is surfaced to the user as an explicit, conscious choice — *privacy by design* in practice.
 
-Architecturally, both providers sit behind a **single interface**. Swapping between them touches **one module only** (`src/askmydocs/llm/`); the rest of the pipeline is completely unaware of which backend answered. This loose coupling is the design decision I'm most proud of in this project.
+Architecturally, both providers sit behind a **single interface**. Swapping between them touches **one package only** (`src/askmydocs/llm/`); the rest of the pipeline is completely unaware of which backend answered. This loose coupling is the design decision I'm most proud of in this project.
 
 ## ✨ Features
 
@@ -55,6 +55,7 @@ Architecturally, both providers sit behind a **single interface**. Swapping betw
 - 🔍 Semantic search via multilingual embeddings (optimized for French)
 - 🔀 **Dual LLM provider** with one-click switching: Ollama (local, GDPR) or Gemini (cloud, performance)
 - 🔒 **100% local generation** by default — no data leaves the machine
+- 🔌 **Pluggable providers**: every backend exposes the same `generate_answer` function, and a small registry in `llm/__init__.py` is the single entry point used by both the UI and the evaluation harness
 - 🤖 Answers strictly grounded in the retrieved context (no hallucination)
 - 📌 **Source citations** (document + page) for every answer
 - 💬 Chat interface with history (Streamlit)
@@ -81,7 +82,7 @@ PDF / DOCX
                               Question ──► Semantic search (top-K)
                                                             │
                                                             ▼
-                                  Generation via provider interface
+                              Generation via provider interface
                                        ┌──────────┴──────────┐
                                        ▼                     ▼
                                Ollama (local, GDPR)   Gemini (cloud)
@@ -94,7 +95,7 @@ The pipeline is exposed through two high-level functions in `rag.py`:
 - `ingest(file_path)`: loads, chunks and indexes a document
 - `ask(question, provider=...)`: retrieves the relevant passages and generates the answer with the chosen provider
 
-The layered design keeps the LLM provider behind a single interface: switching between Ollama and Gemini only touches one module, the rest of the pipeline is untouched.
+Each provider is a small module (`llm/ollama.py`, `llm/gemini.py`) exposing the **same function**: `generate_answer(question, results, lang=...) -> RagResponse`. A thin registry in `llm/__init__.py` maps a provider name to its module and exposes one entry point, `generate_answer(question, results, provider=None)`, used by both the Streamlit UI and the evaluation harness. Adding a provider means writing one module and adding one line to that registry — nothing in the pipeline, the UI or the eval harness has to change.
 
 ## 🛠️ Tech Stack
 
@@ -106,11 +107,11 @@ The layered design keeps the LLM provider behind a single interface: switching b
 | Chunking | langchain-text-splitters | Robust recursive splitting |
 | Embeddings | sentence-transformers (`paraphrase-multilingual-MiniLM-L12-v2`) | Local, free, multilingual (French) |
 | Vector store | ChromaDB | Zero-config local persistence |
-| LLM (default) | Ollama (`llama3.2`), local | 100% on-device, no data leaves the machine (GDPR) |
-| LLM (optional) | Google Gemini | Cloud alternative when performance matters more than locality |
+| LLM (default) | Ollama, local | 100% on-device, no data leaves the machine (GDPR) |
+| LLM (optional cloud) | Google Gemini | Cloud alternative when performance matters more than locality |
 | UI | Streamlit | Fast Python-native UI |
 | Evaluation | custom annotated dataset + custom metrics | Full control over what's measured |
-| Tests | pytest | Coverage of core logic and edge cases |
+| Tests | pytest | Coverage of core ingestion and retrieval logic |
 
 > 💡 The local model is configurable in one line (`OLLAMA_MODEL` in `config.py`). `llama3.2` is the default; switching to `mistral` improves French-language output at the cost of more RAM — exactly the kind of swap the loose-coupling design makes trivial.
 
@@ -119,6 +120,15 @@ The layered design keeps the LLM provider behind a single interface: switching b
 - **Python 3.11+** and [uv](https://docs.astral.sh/uv/)
 - **~6 GB of RAM** to run a local 7B model (e.g. `mistral`) comfortably alongside the embedding model. Lighter models such as `llama3.2` (3B) work on less. On WSL, allocate memory explicitly in `.wslconfig` to avoid out-of-memory kills.
 - *(Optional)* a Google AI Studio API key, only if you want to use the Gemini provider.
+
+## 🤖 Supported LLM providers
+
+| Provider | Type | Models | Environment variable |
+|---|---|---|---|
+| Ollama | Local | `llama3.2` (default), `mistral` | `OLLAMA_HOST` (optional, defaults to `http://localhost:11434`) |
+| Google Gemini | Cloud | `gemini-2.5-flash` | `GEMINI_API_KEY` |
+
+The default provider is set by `LLM_PROVIDER` in `.env` (defaults to `ollama`). If `GEMINI_API_KEY` is missing, Gemini is simply hidden from the UI (with a caption explaining which variable is missing) and the app falls back to the local backend — it never crashes at startup.
 
 ## 🚀 Installation
 
@@ -150,10 +160,10 @@ No API key is required, everything runs locally.
 
 ```bash
 cp .env.example .env
-# Edit .env and add your Google AI Studio key
+# Edit .env and add your GEMINI_API_KEY
 ```
 
-Get a free API key from [Google AI Studio](https://aistudio.google.com/apikey).
+Get an API key from [Google AI Studio](https://aistudio.google.com/apikey). You only need it if you intend to use the Gemini provider.
 
 ## 💻 Usage
 
@@ -180,6 +190,8 @@ The project includes an evaluation harness that measures the pipeline's performa
 uv run python -m askmydocs.eval.runner data/uploads/RGPD.pdf
 ```
 
+The document path is optional (it defaults to `data/uploads/RGPD.pdf`), and the provider is taken from `LLM_PROVIDER` in `.env` (defaults to `ollama`). The harness reads the annotated dataset from `data/eval/qa_dataset.json` and writes detailed results to `data/eval/results.json`.
+
 ### Metrics measured
 
 The harness **decouples retrieval from generation**, to precisely diagnose the source of any failure: a low hit rate points to a retrieval problem, while a good hit rate paired with refusals points to a prompt or generation problem.
@@ -193,7 +205,7 @@ The harness **decouples retrieval from generation**, to precisely diagnose the s
 
 ### Results on the GDPR document (88 pages, 626 chunks)
 
-Because the two providers share the exact same retrieval pipeline, retrieval metrics (hit rate, precision) are identical across them — only the generation metrics (keyword recall, refusal rate) reflect the model. The table below reports both so the comparison stays honest.
+Because both providers share the exact same retrieval pipeline, retrieval metrics (hit rate, precision) are identical across them — only the generation metrics (keyword recall, refusal rate) reflect the model. The table below reports both so the comparison stays honest.
 
 | Metric | Ollama (`llama3.2`, local) | Gemini (cloud) |
 |---|---|---|
@@ -224,19 +236,21 @@ A few real problems solved while building this, and what they taught me:
   language of your corpus, and *measure* it rather than assume.
 - **Extraction noise leading to index pollution**: figure-heavy pages produced
   1-character chunks (bare page numbers) that polluted the vector index and
-  surfaced as irrelevant top results. Added a minimum-length filter, covered by a
-  unit test. Lesson: in RAG, ingestion quality matters as much as the model.
-  *Garbage in, garbage out.*
-- **External API resilience**: the cloud LLM API intermittently returned 429 (rate
-  limit) and 503 (overload) responses during batch evaluation. Added
-  retry-with-backoff covering both, plus graceful degradation so a single failure
-  doesn't discard the whole run. This also motivated the dual-provider design: the
-  local Ollama backend removes the external dependency entirely.
-- **Loose coupling that paid off**: the original project ran only on Gemini.
-  Adding a fully local provider meant writing one new module behind a shared
-  `generate_answer` interface — `rag.py`, the UI and the eval harness were never
-  touched. When an architecture decision lets you swap a core component by adding
-  a single file, you know the seams are in the right place.
+  surfaced as irrelevant top results. Added a minimum-length filter
+  (`MIN_CHUNK_SIZE`), covered by a unit test. Lesson: in RAG, ingestion quality
+  matters as much as the model. *Garbage in, garbage out.*
+- **External API rate limits**: firing the whole evaluation batch at the Gemini
+  API back-to-back triggered rate-limit (429) responses. The eval runner spaces
+  requests with a fixed delay to stay under the quota. The deeper lesson pushed
+  the whole design: the local Ollama backend removes the external dependency —
+  and its rate limits — entirely, which is a big part of why local-first is the
+  default.
+- **Loose coupling that paid off**: the project originally ran only on Gemini.
+  Adding a fully local provider meant writing one module (`llm/ollama.py`) that
+  exposes the same `generate_answer` function and adding a single line to the
+  provider registry — `rag.py`, the UI and the eval harness were never touched.
+  When an architecture decision lets you swap a core component by adding a single
+  file, you know the seams are in the right place.
 - **Operational constraints are real**: running a 7B model locally exposed hard
   RAM limits (OOM kills under WSL's default memory allocation). Diagnosing it with
   `free -h` and raising the WSL memory/swap budget fixed it. Local inference isn't
@@ -246,25 +260,23 @@ A few real problems solved while building this, and what they taught me:
 
 The notebook `notebooks/01_exploration.ipynb` projects the corpus embedding space into 2D (PCA). It shows the thematic clustering of chunks and the position of a query among the relevant passages.
 
-![PCA visualization of embeddings](docs/embeddings_pca.png)
-
 ## 📁 Project structure
 
 ```
 askmydocs/
 ├── src/askmydocs/
 │   ├── config.py          # Centralized configuration
-│   ├── types.py           # Shared types (TypedDict)
+│   ├── types.py           # Shared types (TypedDict): SearchResult, RagResponse
 │   ├── loader.py          # PDF / DOCX extraction
 │   ├── splitter.py        # Chunking
 │   ├── embedder.py        # Embedding generation
 │   ├── vectorstore.py     # Storage and search (ChromaDB)
-│   ├── rag.py             # Pipeline orchestration
-│   ├── llm/               # Answer generation (provider interface)
-│   │   ├── __init__.py    # Provider selector (routes to ollama / gemini)
-│   │   ├── ollama.py      # Local LLM (default, privacy / GDPR)
-│   │   ├── gemini.py      # Cloud LLM (optional, performance)
-│   │   └── prompt.py      # Shared system prompt used by both providers
+│   ├── rag.py             # Pipeline orchestration: ingest() + ask()
+│   ├── llm/               # Answer generation
+│   │   ├── __init__.py    # Provider registry + generate_answer() entry point
+│   │   ├── ollama.py      # Local LLM (default, privacy)
+│   │   ├── gemini.py      # Cloud LLM (Google)
+│   │   └── prompt.py      # Shared prompt used for generation
 │   └── eval/              # Evaluation harness
 │       ├── metrics.py
 │       └── runner.py
@@ -280,9 +292,11 @@ askmydocs/
 uv run pytest -v
 ```
 
+The suite covers the ingestion and retrieval logic — the loader, the splitter and the RAG pipeline (`tests/test_loader.py`, `tests/test_splitter.py`, `tests/test_rag.py`). It runs with no network access and no API key configured.
+
 ## 🔭 Possible improvements
 
-- Benchmark Gemini against Ollama on the full evaluation set (table above)
+- Benchmark Gemini against Ollama on the full evaluation set (fill in the table above)
 - Try `mistral` as the local model for better French output
 - Result re-ranking with a cross-encoder
 - Hybrid search (semantic + keyword / BM25)
