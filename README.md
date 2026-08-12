@@ -294,15 +294,6 @@ uv run pytest -v
 
 The suite covers the ingestion and retrieval logic — the loader, the splitter and the RAG pipeline (`tests/test_loader.py`, `tests/test_splitter.py`, `tests/test_rag.py`). It runs with no network access and no API key configured.
 
-## 🔭 Possible improvements
-
-- Benchmark Gemini against Ollama on the full evaluation set (fill in the table above)
-- Try `mistral` as the local model for better French output
-- Result re-ranking with a cross-encoder
-- Hybrid search (semantic + keyword / BM25)
-- Expand the evaluation dataset
-- OCR support for scanned PDFs
-
 ## 📄 License
 
 This project is licensed under the MIT License, see the [LICENSE](LICENSE) file for details.
